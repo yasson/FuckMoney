@@ -1,5 +1,6 @@
 package com.ys.fuckmoney.model;
 
+import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ListView;
@@ -12,31 +13,41 @@ import android.widget.ListView;
 
 public class FMMoneyNodeInfo {
 
-    public long time;
-    public AccessibilityNodeInfo parent;
-    public AccessibilityNodeInfo listParent;
-    public AccessibilityNodeInfo mNode;
-    public Signature signature;//用于做次红包唯一性判断
-    private int indexInParent;
+    private AccessibilityNodeInfo mParentNode;
+    private AccessibilityNodeInfo mParentListNode;
+    private AccessibilityNodeInfo mNode;
 
+    private int mIndexInParent;
+
+    public long time;
+    public Signature signature=new Signature();//用于做次红包唯一性判断
+
+    public FMMoneyNodeInfo() {
+
+    }
     public FMMoneyNodeInfo(AccessibilityNodeInfo node) {
         mNode = node;
+        time = System.currentTimeMillis();
         getListParent(node);
         makeSignature();
     }
 
     private void makeSignature() {
-        signature = new Signature();
-        signature.sChild = getChildPart(mNode);
-        signature.sParentUp = getUpParentPart();
-        signature.sParentDown = getDownParent();
+        signature.self = getChildPart(mParentNode);
+        signature.up = getUpParentPart();
+        signature.down = getDownParent();
     }
 
+
     private int getIndex(){
-        for (int i = 0, j = listParent.getChildCount(); i<j; i++){
-            if (listParent.getChild(i) ==null)
+        for (int i = 0, j = mParentListNode.getChildCount(); i<j; i++){
+            if (mParentListNode.getChild(i) ==null)
                 continue;
-            if (listParent.getChild(i)==parent){
+            Rect rect1 = new Rect();
+            Rect rect2 = new Rect();
+            mParentListNode.getChild(i).getBoundsInScreen(rect1);
+            mParentNode.getBoundsInScreen(rect2);
+            if (rect1.equals(rect2) ){
                 return i;
             }
         }
@@ -44,28 +55,31 @@ public class FMMoneyNodeInfo {
     }
 
     private String getUpParentPart(){
-        if (indexInParent-1>=0){
-            AccessibilityNodeInfo up = listParent.getChild(indexInParent-1);
+        if (mIndexInParent -1>=0){
+            AccessibilityNodeInfo up = mParentListNode.getChild(mIndexInParent -1);
             return getChildPart(up);
         }
         return null;
     }
     private String getDownParent(){
-        if (listParent.getChildCount()>indexInParent+1){
-            AccessibilityNodeInfo down = listParent.getChild(indexInParent+1);
+        if (mParentListNode.getChildCount()> mIndexInParent +1){
+            AccessibilityNodeInfo down = mParentListNode.getChild(mIndexInParent +1);
             return getChildPart(down);
         }
         return null;
     }
 
     private void getListParent(AccessibilityNodeInfo node) {
-        if (node.getClassName().equals(ListView.class.getSimpleName())) {
-            parent = node;
-            listParent = node.getParent();
-            indexInParent = getIndex();
-        } else {
-            getListParent(node);
+        if (node.getParent()!=null){
+            if (node.getParent().getClassName().equals(ListView.class.getName())) {
+                mParentNode = node;
+                mParentListNode = node.getParent();
+                mIndexInParent = getIndex();
+            } else {
+                getListParent(node.getParent());
+            }
         }
+
     }
 
     private String getChildPart(AccessibilityNodeInfo info) {
@@ -81,15 +95,8 @@ public class FMMoneyNodeInfo {
         return s;
     }
 
-    /**
-     * 签名分为两部分，
-     * 一部分是子节点以及兄弟节点组成的信息，
-     * 一部风是父节点以及父兄弟节点组成的信息
-     *      父兄弟节点包括上节点和下节点
-     */
-    public static class Signature {
-        public String sChild;
-        public String sParentUp;
-        public String sParentDown;
+    public boolean equals(FMMoneyNodeInfo info) {
+
+        return false;
     }
 }

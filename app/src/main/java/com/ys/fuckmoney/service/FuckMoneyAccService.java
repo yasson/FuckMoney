@@ -1,4 +1,4 @@
-package com.ys.fuckmoney;
+package com.ys.fuckmoney.service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.TargetApi;
@@ -16,7 +16,10 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ListView;
 
+import com.ys.fuckmoney.CoverView;
 import com.ys.fuckmoney.core.AppInstance;
+import com.ys.fuckmoney.db.FMDbManager;
+import com.ys.fuckmoney.model.FMMoneyNodeInfo;
 import com.ys.fuckmoney.utils.L;
 import com.ys.fuckmoney.utils.SCTools;
 import com.ys.fuckmoney.utils.T;
@@ -36,7 +39,7 @@ public class FuckMoneyAccService extends AccessibilityService {
         Notification.Builder b = new Notification.Builder(this);
         b.setContentText("辅助关闭权限管理弹窗,mt提示弹窗等").setContentTitle("ys辅助服务");
         startForeground(110, b.build());
-        return START_NOT_STICKY;
+        return super.onStartCommand(intent,flags,startId);
     }
 
     @Override
@@ -90,7 +93,6 @@ public class FuckMoneyAccService extends AccessibilityService {
     /**
      * 进入抢红包页面
      */
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void openPacket() {
         final AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
         new Thread(new Runnable() {
@@ -105,38 +107,47 @@ public class FuckMoneyAccService extends AccessibilityService {
     private void recycle(AccessibilityNodeInfo nodeInfo) {
         if (nodeInfo == null)
             return;
-        if (nodeInfo.getClassName().toString().equals(ListView.class.getSimpleName())) {
-
-        }
+//        if (nodeInfo.getClassName().toString().equals(ListView.class.getSimpleName())) {
+//
+//        }
         final Rect rect = new Rect();
         nodeInfo.getBoundsInScreen(rect);
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        AppInstance.ofUIHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                showView(rect);
-            }
-        });
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        AppInstance.ofUIHandler().post(new Runnable() {
+//            @Override
+//            public void run() {
+////                showView(rect);
+//            }
+//        });
         if (nodeInfo.getChildCount() == 0) {
             if (!TextUtils.isEmpty(nodeInfo.getText())) {
                 if ("领取红包".endsWith(nodeInfo.getText().toString())) {
-                    // TODO: 1/3/17
-//                    nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    T.show("nodeInfo click");
-                    AccessibilityNodeInfo parent = nodeInfo.getParent();
-                    while (parent != null) {
+                    // TODO: 1/3/17 发现红包
+                    //处理红包，得到红包的秘钥
+                    //与之前24小时红包数据进行比较，看这个红包是否已经打开过
+                    //打开过的话就不做任何动作
+                    //为打开过打开并且信息写入数据库
+                    if (FMREHelper.checkValidate(nodeInfo)){
+//                        nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        T.show("nodeInfo click");
+                        AccessibilityNodeInfo parent = nodeInfo.getParent();
+
+                        while (parent != null) {
 //                        if (parent.isCheckable()){
 //                        }
-                        T.show("parent click");
-                        // TODO: 1/3/17
+//                            T.show("parent click");
+                            // TODO: 1/3/17
 //                        parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        parent = parent.getParent();
+                            parent = parent.getParent();
+                        }
                     }
+
+                }else {
                 }
             }
         } else {

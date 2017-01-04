@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ts</string>
     <string name="accessibility_description">辅助服务抢红包</string>
 </resources>
