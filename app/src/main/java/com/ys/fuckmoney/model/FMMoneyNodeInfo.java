@@ -95,8 +95,4 @@ public class FMMoneyNodeInfo {
         return s;
     }
 
-    public boolean equals(FMMoneyNodeInfo info) {
-
-        return false;
-    }
 }

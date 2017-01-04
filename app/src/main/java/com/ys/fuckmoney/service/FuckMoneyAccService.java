@@ -113,17 +113,6 @@ public class FuckMoneyAccService extends AccessibilityService {
         final Rect rect = new Rect();
         nodeInfo.getBoundsInScreen(rect);
 
-//        try {
-//            Thread.sleep(500);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        AppInstance.ofUIHandler().post(new Runnable() {
-//            @Override
-//            public void run() {
-////                showView(rect);
-//            }
-//        });
         if (nodeInfo.getChildCount() == 0) {
             if (!TextUtils.isEmpty(nodeInfo.getText())) {
                 if ("领取红包".endsWith(nodeInfo.getText().toString())) {
@@ -132,11 +121,14 @@ public class FuckMoneyAccService extends AccessibilityService {
                     //与之前24小时红包数据进行比较，看这个红包是否已经打开过
                     //打开过的话就不做任何动作
                     //为打开过打开并且信息写入数据库
-                    if (FMREHelper.checkValidate(nodeInfo)){
-//                        nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        T.show("nodeInfo click");
-                        AccessibilityNodeInfo parent = nodeInfo.getParent();
+                    FMMoneyNodeInfo node = new FMMoneyNodeInfo(nodeInfo);
 
+                    if (FMREHelper.checkValidate(node)){
+                        L.e("打开红包"+node.signature);
+                        //新红包，存数据库并打开
+                        FMDbManager.getInstance().insertOneRENode(node);
+//                        nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        AccessibilityNodeInfo parent = nodeInfo.getParent();
                         while (parent != null) {
 //                        if (parent.isCheckable()){
 //                        }
@@ -145,9 +137,10 @@ public class FuckMoneyAccService extends AccessibilityService {
 //                        parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                             parent = parent.getParent();
                         }
+                    }else {
+                        L.e("红包抢过了"+node.signature);
                     }
 
-                }else {
                 }
             }
         } else {
