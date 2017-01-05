@@ -1,5 +1,7 @@
 package com.ys.fuckmoney.model;
 
+import android.text.TextUtils;
+
 /**
  * Created by nufeng on 1/4/17.
  *
@@ -14,6 +16,13 @@ public class Signature {
     public String self;
     public String up;
     public String down;
+
+    public boolean hasUp(){
+        return !TextUtils.isEmpty(up)&&!up.equals("null");
+    }
+    public boolean hasDown(){
+        return !TextUtils.isEmpty(down)&&!down.equals("null");
+    }
 
     @Override
     public String toString() {

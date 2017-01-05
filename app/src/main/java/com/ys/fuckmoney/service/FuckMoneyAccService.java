@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.ys.fuckmoney.CoverView;
@@ -33,6 +34,15 @@ import java.util.List;
 
 public class FuckMoneyAccService extends AccessibilityService {
     CoverView c;
+
+    private static final String WECHAT_DETAILS_EN = "Details";
+    private static final String WECHAT_DETAILS_CH = "红包详情";
+    private static final String WECHAT_BETTER_LUCK_EN = "Better luck next time!";
+    private static final String WECHAT_BETTER_LUCK_CH = "手慢了";
+    private static final String WECHAT_EXPIRES_CH = "已超过24小时";
+    private static final String WECHAT_VIEW_SELF_CH = "查看红包";
+    private static final String WECHAT_VIEW_OTHERS_CH = "领取红包";
+    private static final String WECHAT_NOTIFICATION_TIP = "[微信红包]";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -77,19 +87,50 @@ public class FuckMoneyAccService extends AccessibilityService {
                 break;
             case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
                 String className = event.getClassName().toString();
-                if (className.equals("com.tencent.mm.ui.LauncherUI")) {
-                    //开始抢红包
-                    openPacket();
-                } else if (className.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI")) {
-                    //开始打开红包
-//                    getPacket();
-                } else if (className.equals("com.tencent.mm.ui.base.p")) {
-//                    getPacket();
+                switch (className){
+                    case "com.tencent.mm.ui.LauncherUI":
+                        //开始抢红包
+                        openPacket();
+                        break;
+                    case "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI":
+                        //开始打开红包
+                        getPacket();
+                        break;
+                    case "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI":
+                        chekCanBeOpen();
+                        //红包打开
+                        break;
                 }
+                L.i("class name:"+className);
+                break;
+            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+                openPacket();
                 break;
         }
     }
 
+    private void chekCanBeOpen() {
+        boolean hasNodes = this.hasOneOfThoseNodes(
+                WECHAT_BETTER_LUCK_CH, WECHAT_DETAILS_CH,
+                WECHAT_BETTER_LUCK_EN, WECHAT_DETAILS_EN, WECHAT_EXPIRES_CH);
+        if (hasNodes){
+            performGlobalAction(GLOBAL_ACTION_BACK);
+        }
+    }
+
+    private boolean hasOneOfThoseNodes(String... texts) {
+        if (getRootInActiveWindow()==null)
+            return true;
+        List<AccessibilityNodeInfo> nodes;
+        for (String text : texts) {
+            if (text == null) continue;
+
+            nodes = getRootInActiveWindow().findAccessibilityNodeInfosByText(text);
+
+            if (nodes != null && !nodes.isEmpty()) return true;
+        }
+        return false;
+    }
     /**
      * 进入抢红包页面
      */
@@ -134,7 +175,7 @@ public class FuckMoneyAccService extends AccessibilityService {
 //                        }
 //                            T.show("parent click");
                             // TODO: 1/3/17
-//                        parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                             parent = parent.getParent();
                         }
                     }else {
@@ -180,11 +221,24 @@ public class FuckMoneyAccService extends AccessibilityService {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void getPacket() {
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
-        List<AccessibilityNodeInfo> infos = nodeInfo.findAccessibilityNodeInfosByText("微信红包");
-        List<AccessibilityNodeInfo> btns = nodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/bdg");
-        for (AccessibilityNodeInfo info : btns) {
-            info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        if (nodeInfo==null){
+            return;
         }
+        List<AccessibilityNodeInfo> pastNode = nodeInfo.findAccessibilityNodeInfosByText("该红包已经超过24小时。如已领取，可在\"我的红包\"中查看");
+        if (pastNode!=null&&pastNode.size()>0){
+            //红包过期
+        }
+        for (int i = 0,j=nodeInfo.getChildCount();i<j;i++){
+            AccessibilityNodeInfo c = nodeInfo.getChild(i);
+            if (c.getClassName().equals(Button.class.getName())){
+                c.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            }
+        }
+//        List<AccessibilityNodeInfo> infos = nodeInfo.findAccessibilityNodeInfosByText("微信红包");
+//        List<AccessibilityNodeInfo> btns = nodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/bdg");
+//        for (AccessibilityNodeInfo info : nodeInfo) {
+//            info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//        }
     }
 
     @Override

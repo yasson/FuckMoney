@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.ys.fuckmoney.model.FMMoneyNodeInfo;
+import com.ys.fuckmoney.utils.L;
 import com.ys.fuckmoney.utils.TimeUtils;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class TbOpenedRE {
                     info.signature.up = cursor.getString(cursor.getColumnIndex(C_UP));
                     info.signature.down = cursor.getString(cursor.getColumnIndex(C_DOWN));
                     nodes.add(info);
+                    L.d("old:"+info.signature);
                 }while (cursor.moveToNext());
             }
         } finally {

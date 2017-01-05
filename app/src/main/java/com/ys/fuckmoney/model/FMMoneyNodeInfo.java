@@ -33,9 +33,9 @@ public class FMMoneyNodeInfo {
     }
 
     private void makeSignature() {
-        signature.self = getChildPart(mParentNode);
-        signature.up = getUpParentPart();
-        signature.down = getDownParent();
+        signature.self = getChildPart(mParentNode).replace("'","-");
+        signature.up = getUpParentPart()==null?null:getUpParentPart().replace("'","-");
+        signature.down = getDownParent()==null?null:getDownParent().replace("'","-");
     }
 
 

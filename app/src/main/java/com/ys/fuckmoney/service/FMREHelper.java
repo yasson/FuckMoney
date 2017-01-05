@@ -34,12 +34,12 @@ public class FMREHelper {
             //确定true 数据库中数据存在up和down有一个不同或者都不同
             //确定false 数据库中数据都存在down和up都相同
             //不确定 false 数据库中数据up和down有一个相同，领一个不存在
-            if (!TextUtils.isEmpty(up) && !TextUtils.isEmpty(down)) {
-                for (FMMoneyNodeInfo info : opened) {
-                    if (!TextUtils.isEmpty(info.signature.up)) {
-                        if (up.equals(info.signature.up)) {
-                            if (!TextUtils.isEmpty(info.signature.down)) {
-                                if (down.equals(info.signature.down)) {
+            if (node.signature.hasUp() && node.signature.hasDown()) {
+                for (FMMoneyNodeInfo old : opened) {
+                    if (old.signature.hasUp()) {
+                        if (up.equals(old.signature.up)) {
+                            if (old.signature.hasDown()) {
+                                if (down.equals(old.signature.down)) {
                                     return false;
                                 }
                             } else {
@@ -48,10 +48,10 @@ public class FMREHelper {
                             }
                         }
                     }
-                    if (!TextUtils.isEmpty(info.signature.down)) {
-                        if (up.equals(info.signature.down)) {
-                            if (!TextUtils.isEmpty(info.signature.up)) {
-                                if (down.equals(info.signature.up)) {
+                    if (old.signature.hasDown()) {
+                        if (up.equals(old.signature.down)) {
+                            if (old.signature.hasUp()) {
+                                if (down.equals(old.signature.up)) {
                                     return false;
                                 }
                             } else {
@@ -63,22 +63,24 @@ public class FMREHelper {
                 }
             } else if (!TextUtils.isEmpty(up)) {
                 //2.up 存在
-                for (FMMoneyNodeInfo info : opened) {
-                    if (TextUtils.isEmpty(info.signature.up) || up.equals(info.signature.up)) {
+                for (FMMoneyNodeInfo old : opened) {
+                    if (!old.signature.hasUp() && up.equals(old.signature.up)) {
+                        // TODO: 1/5/17 这里存在bug,先save一次,防止已经被标记忽略的红包再次打开
+//                        FMDbManager.getInstance().insertOneRENode(node);
                         return false;
                     }
                 }
             } else if (!TextUtils.isEmpty(down)) {
                 //3 down 存在
-                for (FMMoneyNodeInfo info : opened) {
-                    if (TextUtils.isEmpty(info.signature.down) || up.equals(info.signature.down)) {
+                for (FMMoneyNodeInfo old : opened) {
+                    if (!old.signature.hasDown() || down.equals(old.signature.down)) {
                         return false;
                     }
                 }
-            } else if (TextUtils.isEmpty(node.signature.up) && TextUtils.isEmpty(node.signature.down)) {
+            } else if (!node.signature.hasUp() && !node.signature.hasDown()) {
                 //4都不存在
-                for (FMMoneyNodeInfo info : opened) {
-                    if (TextUtils.isEmpty(info.signature.up) && TextUtils.isEmpty(info.signature.down)) {
+                for (FMMoneyNodeInfo old : opened) {
+                    if (!old.signature.hasUp() && !old.signature.hasDown()) {
                         return false;
                     }
                 }
