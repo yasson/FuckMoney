@@ -1,6 +1,7 @@
 package com.ys.fuckmoney.model;
 
 import android.graphics.Rect;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.ListView;
@@ -40,6 +41,8 @@ public class FMMoneyNodeInfo {
 
 
     private int getIndex(){
+        if (mParentListNode==null)
+            return -1;
         for (int i = 0, j = mParentListNode.getChildCount(); i<j; i++){
             if (mParentListNode.getChild(i) ==null)
                 continue;
@@ -71,7 +74,7 @@ public class FMMoneyNodeInfo {
 
     private void getListParent(AccessibilityNodeInfo node) {
         if (node.getParent()!=null){
-            if (node.getParent().getClassName().equals(ListView.class.getName())) {
+            if (node.getParent().getClassName().equals(RecyclerView.class.getName())) {
                 mParentNode = node;
                 mParentListNode = node.getParent();
                 mIndexInParent = getIndex();
@@ -83,6 +86,8 @@ public class FMMoneyNodeInfo {
     }
 
     private String getChildPart(AccessibilityNodeInfo info) {
+        if (info==null)
+            return "";
         String s = "";
         if (info.getChildCount() == 0 && !TextUtils.isEmpty(info.getText())) {
             s = info.getText().toString();

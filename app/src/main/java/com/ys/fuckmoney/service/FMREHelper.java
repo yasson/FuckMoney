@@ -26,6 +26,8 @@ public class FMREHelper {
     public static boolean checkValidate(FMMoneyNodeInfo node) {
 
         List<FMMoneyNodeInfo> opened = FMDbManager.getInstance().getOneDayREInfoByNode(node);
+//        if (opened.size()>0)
+//            return false;
         if (opened.size() > 0) {
             String up = node.signature.up;
             String down = node.signature.down;
@@ -61,16 +63,16 @@ public class FMREHelper {
                         }
                     }
                 }
-            } else if (!TextUtils.isEmpty(up)) {
+            } else if (node.signature.hasUp()) {
                 //2.up 存在
                 for (FMMoneyNodeInfo old : opened) {
-                    if (!old.signature.hasUp() && up.equals(old.signature.up)) {
+                    if (!old.signature.hasUp() || up.equals(old.signature.up)) {
                         // TODO: 1/5/17 这里存在bug,先save一次,防止已经被标记忽略的红包再次打开
 //                        FMDbManager.getInstance().insertOneRENode(node);
                         return false;
                     }
                 }
-            } else if (!TextUtils.isEmpty(down)) {
+            } else if (node.signature.hasDown()) {
                 //3 down 存在
                 for (FMMoneyNodeInfo old : opened) {
                     if (!old.signature.hasDown() || down.equals(old.signature.down)) {
