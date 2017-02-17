@@ -19,8 +19,8 @@ public class FMREHelper {
      *
      * @param node 当前节点
      *
-     * true  节点有效，可以打开;
-     * false 无效节点,打开过了
+     * <p>true  节点有效，可以打开</p>
+     * <p>false 无效节点,打开过了</p>
      *
      */
     public static boolean checkValidate(FMMoneyNodeInfo node) {

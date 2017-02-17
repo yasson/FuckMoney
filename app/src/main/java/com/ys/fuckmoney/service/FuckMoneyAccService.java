@@ -131,7 +131,7 @@ public class FuckMoneyAccService extends AccessibilityService {
     }
 
     private boolean chekCanBeOpen() {
-        boolean hasNodes = this.hasOneOfThoseNodes(
+        boolean hasNodes = this.hasOneOfThoseNodes(GETED,
                 WECHAT_BETTER_LUCK_CH, WECHAT_DETAILS_CH,
                 WECHAT_BETTER_LUCK_EN, WECHAT_DETAILS_EN, WECHAT_EXPIRES_CH);
         if (hasNodes){
